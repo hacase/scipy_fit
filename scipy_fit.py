@@ -1,5 +1,4 @@
 # fit program for python with scipy.optimize and kafe 2
-# fit program for python with scipy.optimize and kafe 2
 import numpy as np
 from scipy.optimize import curve_fit
 from kafe2 import XYContainer, Fit, Plot, ContoursProfiler
@@ -8,7 +7,7 @@ import matplotlib.pyplot
 # the code currently (May 2020) gives a lot of matplotlib deprecation warnings
 # which are probably cleaned up with matplotlibs version 3.3.
 # until then we just turn off these warnings:
-import warnings
+import warningsx
 warnings.filterwarnings("ignore")
 
 # store original plot parameters so that we can revert:
