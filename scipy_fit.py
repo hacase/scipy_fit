@@ -81,7 +81,7 @@ import inspect
 # set copy to True to return plot command
 # set flag to True to return fit plot
 # set retoure to True to return results from kafe2
-def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False):
+def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False):
     if xerr is not False:
         xy_data = XYContainer(x_data=x_data, y_data=y_data)
         xy_data.add_error(axis='x', err_val= xerr)
@@ -182,8 +182,8 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                 ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='Werte')
             else:
                 ax.plot(x_data, y_data, ms=1, marker='o', mew=0.5, label='data')
-            ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
             ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
+            ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
             plt.legend()
             ax.set_xlabel('x')
             ax.set_ylabel('y')
@@ -191,8 +191,8 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             revert_params()
         print('\n')
 
-        
-def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False):
+
+def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False):
     frame = inspect.currentframe()
     frame = inspect.getouterframes(frame)[1]
     string = inspect.getframeinfo(frame[0]).code_context[0].strip()
@@ -225,21 +225,23 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
         function = string.replace('model_function=', '')
         print('Fit model:', function)
         
+    A = y_data.max()
     mu = x_data[y_data.argmax()]
-    FWHM = np.where(y_data > y_data.max() * 0.5)[0][0]
-    
+    b = (y_data[0] + y_data[-1]) / 2
+    FWHM = np.absolute(mu - np.where(y_data > (y_data.max() * 0.5))[0][0])
+    if offs is not False:
+        A = y_data.max()-b
+        FWHM = np.absolute(mu - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
     if yerr == True:
         if offs is not False:
-            b = (y_data[0] + y_data[-1]) / 2
-            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[1, mu, FWHM, b], sigma = yerr)
+            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b], sigma = yerr)
         else:
-            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[1, mu, FWHM], sigma = yerr)
+            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM], sigma = yerr)
     else:
         if offs is not False:
-            b = (y_data[0] + y_data[-1]) / 2
-            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[1, mu, FWHM, b])
+            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b])
         else:
-            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[1, mu, FWHM])
+            popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM])
 
     perr=np.sqrt(np.diag(pcov))
     
@@ -294,11 +296,13 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='Werte')
         else:
             ax.plot(x_data, y_data, ms=1, marker='o', mew=0.5, label='data')
-        ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
         ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='5$\sigma$')
+        ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
         plt.legend()
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         
         revert_params()
+    if retoure is not False:
+        return popt, perr
     print('\n')
