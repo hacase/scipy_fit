@@ -6,3 +6,5 @@ template.ipynb
 __pycache__
 .virtual_documents
 .ipynb_checkpoints
+.DS_Store
+kafefit.py
