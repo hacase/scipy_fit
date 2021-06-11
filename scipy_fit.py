@@ -179,7 +179,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 
             fig, ax = plt.subplots()
             if yerr is not False:
-                ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='Werte')
+                ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='data')
             else:
                 ax.plot(x_data, y_data, ms=1, marker='o', mew=0.5, label='data')
             ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
@@ -190,9 +190,14 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 
             revert_params()
         print('\n')
-
-
-def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False):
+        
+        if plot is not False:            
+            return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
+        
+        if retoure is not False:
+            return popt, perr
+        
+def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False):
     frame = inspect.currentframe()
     frame = inspect.getouterframes(frame)[1]
     string = inspect.getframeinfo(frame[0]).code_context[0].strip()
@@ -293,7 +298,7 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
 
         fig, ax = plt.subplots()
         if yerr is not False:
-            ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='Werte')
+            ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='data')
         else:
             ax.plot(x_data, y_data, ms=1, marker='o', mew=0.5, label='data')
         ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='5$\sigma$')
@@ -303,6 +308,10 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
         ax.set_ylabel('y')
         
         revert_params()
+        
+    if plot is not False:            
+        return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
+    
     if retoure is not False:
         return popt, perr
     print('\n')
