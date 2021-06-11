@@ -1,3 +1,5 @@
+# fit program for python with scipy.optimize and kafe 2
+# fit program for python with scipy.optimize and kafe 2
 import numpy as np
 from scipy.optimize import curve_fit
 from kafe2 import XYContainer, Fit, Plot, ContoursProfiler
