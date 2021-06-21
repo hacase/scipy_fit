@@ -1,8 +1,9 @@
-# fit program for python with scipy.optimize and kafe 2
+# fit program for python with scipy.optimize and scipy.odr
 import numpy as np
 from scipy.optimize import curve_fit
-from kafe2 import XYContainer, Fit, Plot, ContoursProfiler
+import scipy.odr as sodr
 import matplotlib.pyplot
+import inspect
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -70,86 +71,91 @@ def revert_params():
     
     
 import matplotlib.pyplot as plt
-import inspect
-
 # fitprogram
-# if xerr, executed with kafe2
+# if xerr, executed with scipy.odr, but with num set to variable number
 # else executed with scipy.optimize, curve_fit
 # returns fit parameter
-# set copy to True to return plot command
-# set flag to True to return fit plot
-# set retoure to True to return results from kafe2
-def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False):
+# set copy to return plot command
+# set flag to return fit plot
+# set retoure to return internal results
+# set plot to ax to plot in subplot environment, set l for label
+def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, num=False):
     if plot is not False:
         if xerr is not False:
-            xy_data = XYContainer(x_data=x_data, y_data=y_data)
-            xy_data.add_error(axis='x', err_val= xerr)
+            lin_model = sodr.Model(model_function)
+            fit_data = sodr.RealData(x_data, y_data, sx=xerr)
             if yerr is not False:
-                xy_data.add_error(axis='y', err_val= yerr)
-
-            xy_fit = Fit(data=xy_data, model_function=model_function) 
-            results = xy_fit.do_fit()
-            if results['did_fit']:
-                xy_plot = Plot([xy_fit])
-                xy_plot.plot()
-                return xy_fit
+                fit_data = sodr.RealData(x_data, y_data, sx=xerr, sy=yerr)
+            odr = sodr.ODR(fit_data, lin_model, beta0=np.ones(num))
+            out = odr.run()
+            if l is False:
+                return plot.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red')
+            else:
+                return plot.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red', label=l)
         else:
             if yerr is not False:
                     popt, pcov = curve_fit(model_function, x_data, y_data, sigma=yerr)
             else:
                     popt, pcov = curve_fit(model_function, x_data, y_data)
-            return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
+            if l is not False:
+                return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
+            else:
+                return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label=l)
         
     else:
         if xerr is not False:
-            xy_data = XYContainer(x_data=x_data, y_data=y_data)
-            xy_data.add_error(axis='x', err_val= xerr)
+            lin_model = sodr.Model(model_function)
+            fit_data = sodr.RealData(x_data, y_data, sx=xerr)
             if yerr is not False:
-                xy_data.add_error(axis='y', err_val= yerr)
+                fit_data = sodr.RealData(x_data, y_data, sx=xerr, sy=yerr)
+            odr = sodr.ODR(fit_data, lin_model, beta0=np.ones(num))
+            out = odr.run()
 
-            xy_fit = Fit(data=xy_data, model_function=model_function) 
-            results = xy_fit.do_fit()
-            if results['did_fit']:
-                xy_plot = Plot([xy_fit])
-                xy_plot.plot()
-                if retoure is False:
-                    print('#===== Results of Fit =====#')
-                    string = str(model_function)
-                    word_2 = string.split()[1]
-                    print('Fit model:', word_2)
+            print('#===== Results of Fit =====#')
+            string = str(model_function)
+            word_2 = string.split()[1]
+            print('Fit model:', word_2)
 
-                    length = len(results['parameter_values'])
+            print('=== Parameter Values ===')
+            for i in range(num):
+                print(f'Par. {i+1}: {out.beta[i]:.3e} +/- {out.sd_beta[i]:.3e}')
+                
+            print('=== Goodness of fit ===')
+            print('Chi^2:', out.res_var)
+                
+            if copy is not False:
+                frame = inspect.currentframe()
+                frame = inspect.getouterframes(frame)[1]
+                string = inspect.getframeinfo(frame[0]).code_context[0].strip()
+                varbl = string[string.find('(') + 1:-1].split(',')
 
-                    print('=== Parameter Values ===')
-                    val = np.zeros(length)
-                    err = np.zeros(length)
-                    i=0
-                    for param in results['parameter_values']:
-                        val[i] = results['parameter_values'][param]
-                        err[i] = results['parameter_errors'][param]
+                arry=[]
+                for param in out.beta:
+                    arry.append("{:.3e}".format(param))
+                params = ','.join(map(str, arry))
 
-                        # print every parameter with error
-                        print(f'{param} = {val[i]:.3e} +/- {err[i]:.3e}')
-                        i+=1
+                print(f'\nax.plot({varbl[1]},{varbl[0]}({varbl[1]},{params}),lw=0.5,label=\'Fit\')')
+                print('\n')
 
-                    if copy is not False:
-                        frame = inspect.currentframe()
-                        frame = inspect.getouterframes(frame)[1]
-                        string = inspect.getframeinfo(frame[0]).code_context[0].strip()
-                        varbl = string[string.find('(') + 1:-1].split(',')
+            if flag is not False:
+                nstd = 2.
+                popt_up = out.beta + nstd * out.sd_beta
+                popt_dw = out.beta - nstd * out.sd_beta
 
-                        arry=[]
-                        for param in results['parameter_values']:
-                            arry.append("{:.3e}".format(results['parameter_values'][param]))
-                        params = ', '.join(map(str, arry))
-
-                        print(f'\nax.plot({varbl[1]},{varbl[0]}({varbl[1]},{params}),lw=0.5,label=\'Fit\')')
-                    print('\n')
-
-                    return xy_fit
-
-                elif retoure == 2:
-                    return results
+                fit = model_function(out.beta, x_data)
+                fit_up = model_function(popt_up, x_data)
+                fit_dw = model_function(popt_dw, x_data)
+                
+                fig, ax = plt.subplots()
+                ax.errorbar(x_data, y_data, yerr=yerr, xerr=xerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='data')
+                ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
+                ax.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red', label='fit')
+                plt.legend()
+                ax.set_xlabel('x')
+                ax.set_ylabel('y')
+                
+            if retoure is not False:
+                return out.beta, out.sd_beta
         else:
             if yerr is not False:
                 popt, pcov = curve_fit(model_function, x_data, y_data, sigma=yerr)
@@ -207,13 +213,14 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                 ax.set_xlabel('x')
                 ax.set_ylabel('y')
 
-                revert_params()
-
             if retoure is not False:
                 return popt, perr
             
             print('\n')
         
+# gaussian fit only with scipy.optimize
+# normal gaussian function with/without offset build in
+# calculates initial guesses
 def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False):
     def gauss(x,a,x0,sigma):
         return a*np.exp(-(x-x0)**2/(2.*sigma**2))
@@ -358,138 +365,3 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             return popt, perr
 
         print('\n')
-
-        
-def exefit_kafe(model_function, x_data, y_data, xerr=False, yerr=False, retoure=1):
-    
-    xy_data = XYContainer(x_data=x_data, y_data=y_data)
-    if xerr is not False:
-        xy_data.add_error(axis='x', err_val= xerr)
-    if yerr is not False:
-        xy_data.add_error(axis='y', err_val= yerr)
-        
-    xy_fit = Fit(data=xy_data, model_function=model_function) 
-    results = xy_fit.do_fit()
-    if results['did_fit']:
-        xy_plot = Plot([xy_fit])
-        xy_plot.plot()
-        if retoure == 1:
-            print('#===== Results of Fit =====#')
-    
-            if results['did_fit']:
-
-                length = len(results['parameter_values'])
-
-                print('\n=== Parameter Values ===')
-                val = np.zeros(length)
-                err = np.zeros(length)
-                i=0
-                for param in results['parameter_values']:
-                    val[i] = results['parameter_values'][param]
-                    err[i] = results['parameter_errors'][param]
-
-                    # print every parameter with error
-                    print(f'{param} = {val[i]:.3e} +/- {err[i]:.3e}')
-                    i+=1
-                
-                return xy_fit
-        elif retoure == 2:
-            return results
-    else:
-        print('Fit failed')
-        
-        
-# set flag to 1 to print certain information
-# set cor, cov to 2, if given variables are longer than one symbole
-def giveres(results, cor=None, cov=None, cost=None):
-    print('#===== Results of Fit =====#')
-    
-    if results['did_fit']:
-        
-        length = len(results['parameter_values'])
-        
-        print('\n=== Parameter Values ===')
-        val = np.zeros(length)
-        err = np.zeros(length)
-        i=0
-        for param in results['parameter_values']:
-            val[i] = results['parameter_values'][param]
-            err[i] = results['parameter_errors'][param]
-            
-            # print every parameter with error
-            print(f'{param} = {val[i]:.3e} +/- {err[i]:.3e}')
-            i+=1
-            
-        if length == 2:
-            # only if only two variables x and y are given
-            # does only makes sense for y=f(x)
-            print('\n\n=== Parameter Correlation Coefficient ===')
-            x = [val[0]+err[0],val[0]-err[0]]
-            y = [val[1]+err[1],val[1]-err[1]]
-            
-            # covariance
-            cov = np.mean([x[0]*y[0], x[1]*y[1]])-np.mean(x)*np.mean(y)
-            # sigma_x times sigma_y
-            sigmaxy = np.sqrt(np.mean([x[0]**2, x[1]**2])-np.mean(x)**2) * np.sqrt(np.mean([y[0]**2, y[1]**2])-np.mean(y)**2)
-            
-            print(f'rho = {cov/sigmaxy:.3f}')
-            
-        
-        if cor == 1:
-            print('\n\n=== Parameter Correlation Matrix ===')
-            # formatting dynamical matrix dpending of variable number
-            # first line
-            string = ' '*2
-            for param in results['parameter_values']:
-                string = string + ' '*6 + param + ' '*6
-            print(string)
-            # second line
-            string = ' +'
-            for param in np.arange(length):
-                string = string + '-'*12
-            string = string + '-'
-            print(string)
-            
-            i = 0
-            for param in results['parameter_values']:
-                print(param,'|',results['parameter_cor_mat'][i],sep='')
-                i+=0
-        elif cor == 2:
-            print('\n\n=== Parameter Correlation Matrix ===')
-            print(results['parameter_cor_mat'])
-            
-        
-        if cov == 1:
-            print('\n\n=== Parameter Covariance Matrix ===')
-            # formatting dynamical matrix dpending of variable number
-            # first line
-            string = ' '*2
-            for param in results['parameter_values']:
-                string = string + ' '*6 + param + ' '*6
-            print(string)
-            # second line
-            string = ' +'
-            for param in np.arange(length):
-                string = string + '-'*12
-            string = string + '-'
-            print(string)
-            
-            i = 0
-            for param in results['parameter_values']:
-                print(param,'|',results['parameter_cov_mat'][i],sep='')
-                i+=0
-        elif cov == 2:
-            print('\n\n=== Parameter Covariance Matrix ===')
-            print(results['parameter_cov_mat'])
-        
-
-        if cost == 1:
-            print('\n\n=== Cost Function ===')
-            cost = results['cost']
-            ndf = results['ndf']
-            chi2_probability = results['chi2_probability']
-            # print information
-            print(f'chi^2/ndf = {cost:.3f}/{ndf:.3f} = {cost/ndf:.3f}')
-            print(f'chi^2 probability = {chi2_probability:.3f}')
-    else:
-        print('Fit failed!')
