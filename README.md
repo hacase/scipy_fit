@@ -7,6 +7,6 @@
 `fit.revert_params()` is neccesary at end of subplot to flush internal parameters.
 Parameters can be set to 'True':
 Set `flag` to see plot.
-Set `copy` to get matplotlib code for fit to copy.
+Set `copy` to get matplotlib code for fit to copy.\\
 Set `retoure` to return results from kafe2.
 Set `offs` to fit with a gaussian with offset.
