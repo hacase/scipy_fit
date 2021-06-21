@@ -1,7 +1,7 @@
 # python fit with scipy.optimize
 `exefit` with function model to fit with curve_fit.
 `exefit_gauss` has gauss function with/without offset, calculates initial values automatically.
-'exefit' fits with kafe2 if error in x axis is given.
+'exefit' fits with scipy.odr if error in x axis is given. Set num with number of variables of function model.
 # example
 `fit.saveplot(fig_width=5.5)` gives nice plot from matplotlib as output with latex formatting.
 `fit.revert_params()` is neccesary at end of subplot to flush internal parameters.
