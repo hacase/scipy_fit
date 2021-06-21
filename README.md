@@ -1,4 +1,4 @@
-# python fit with scipy.optimize
+# python fit with scipy
 `exefit` with function model to fit with curve_fit.
 `exefit_gauss` has gauss function with/without offset, calculates initial values automatically.
 'exefit' fits with scipy.odr if error in x axis is given. Set num with number of variables of function model.
