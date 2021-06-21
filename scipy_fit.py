@@ -305,14 +305,14 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
         print('=== Parameter Values ===')
         if local is True:
             if offs is False:
-                print(f'A: {popt[0]:.2e} +/- {perr[0]:.2e}')
-                print(f'mu: {popt[1]:.2e} +/- {perr[1]:.2e}')
+                print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
+                print(f'mu:    {popt[1]:.2e} +/- {perr[1]:.2e}')
                 print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
             else:
-                print(f'A: {popt[0]:.2e} +/- {perr[0]:.2e}')
-                print(f'mu: {popt[1]:.2e} +/- {perr[1]:.2e}')
+                print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
+                print(f'mu:    {popt[1]:.2e} +/- {perr[1]:.2e}')
                 print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
-                print(f'b: {popt[3]:.2e} +/- {perr[3]:.2e}')
+                print(f'b:     {popt[3]:.2e} +/- {perr[3]:.2e}')
         else:
             for i in range(len(popt)):
                 print(f'Par. {i+1}: {popt[i]:.2e} +/- {perr[i]:.2e}')
