@@ -118,7 +118,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 
             print('=== Parameter Values ===')
             for i in range(num):
-                print(f'Par. {i+1}: {out.beta[i]:.3e} +/- {out.sd_beta[i]:.3e}')
+                print(f'Par. {i+1}: {out.beta[i]:.2e} +/- {out.sd_beta[i]:.2e}')
                 
             print('=== Goodness of fit ===')
             print('Chi^2:', out.res_var)
