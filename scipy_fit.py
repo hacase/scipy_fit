@@ -4,6 +4,9 @@ from scipy.optimize import curve_fit
 from kafe2 import XYContainer, Fit, Plot, ContoursProfiler
 import matplotlib.pyplot
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # store original plot parameters so that we can revert:
 ORIG_MATPLOTLIB_CONF = dict(matplotlib.rcParams)
 
