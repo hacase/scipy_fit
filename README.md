@@ -6,7 +6,7 @@
 `fit.saveplot(fig_width=5.5)` gives nice plot from matplotlib as output with latex formatting.
 `fit.revert_params()` is neccesary at end of subplot to flush internal parameters.
 Parameters can be set to 'True':
-Set `flag` to see plot.
-Set `copy` to get matplotlib code for fit to copy.\n
-Set `retoure` to return results from kafe2.
+Set `flag` to see plot.  
+Set `copy` to get matplotlib code for fit to copy.  
+Set `retoure` to return results from kafe2.  
 Set `offs` to fit with a gaussian with offset.
