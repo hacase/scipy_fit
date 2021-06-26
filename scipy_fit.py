@@ -136,8 +136,9 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                 for param in out.beta:
                     arry.append("{:.3e}".format(param))
                 params = ','.join(map(str, arry))
-
-                print(f'\nax.plot({varbl[1]},{varbl[0]}({varbl[1]},{params}),lw=0.5,label=\'Fit\')')
+                
+                print(f'\nparams=np.array([{params}])')
+                print(f'ax.plot({varbl[1]},{varbl[0]}(params,{varbl[1]}),lw=0.5,label=\'Fit\')')
                 print('\n')
 
             if flag is not False:                
