@@ -79,14 +79,17 @@ import matplotlib.pyplot as plt
 # set flag to return fit plot
 # set retoure to return internal results
 # set plot to ax to plot in subplot environment, set l for label
-def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, num=False):
+def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, num=False, fill=False):
+    if num is not False:
+        if isinstance(num, int):
+            num = np.ones(num)
     if plot is not False:
         if xerr is not False:
             lin_model = sodr.Model(model_function)
             fit_data = sodr.RealData(x_data, y_data, sx=xerr)
             if yerr is not False:
                 fit_data = sodr.RealData(x_data, y_data, sx=xerr, sy=yerr)
-            odr = sodr.ODR(fit_data, lin_model, beta0=np.ones(num))
+            odr = sodr.ODR(fit_data, lin_model, beta0 = num)
             out = odr.run()
             if l is False:
                 return plot.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red')
@@ -108,7 +111,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             fit_data = sodr.RealData(x_data, y_data, sx=xerr)
             if yerr is not False:
                 fit_data = sodr.RealData(x_data, y_data, sx=xerr, sy=yerr)
-            odr = sodr.ODR(fit_data, lin_model, beta0=np.ones(num))
+            odr = sodr.ODR(fit_data, lin_model, beta0 = num)
             out = odr.run()
 
             print('#===== Results of Fit =====#')
@@ -117,7 +120,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             print('Fit model:', word_2)
 
             print('=== Parameter Values ===')
-            for i in range(num):
+            for i in range(len(num)):
                 print(f'Par. {i+1}: {out.beta[i]:.2e} +/- {out.sd_beta[i]:.2e}')
                 
             print('=== Goodness of fit ===')
@@ -137,18 +140,18 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                 print(f'\nax.plot({varbl[1]},{varbl[0]}({varbl[1]},{params}),lw=0.5,label=\'Fit\')')
                 print('\n')
 
-            if flag is not False:
-                nstd = 2.
-                popt_up = out.beta + nstd * out.sd_beta
-                popt_dw = out.beta - nstd * out.sd_beta
-
-                fit = model_function(out.beta, x_data)
-                fit_up = model_function(popt_up, x_data)
-                fit_dw = model_function(popt_dw, x_data)
-                
+            if flag is not False:                
                 fig, ax = plt.subplots()
                 ax.errorbar(x_data, y_data, yerr=yerr, xerr=xerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='data')
-                ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
+                if fill is False:
+                    nstd = 2.
+                    popt_up = out.beta + nstd * out.sd_beta
+                    popt_dw = out.beta - nstd * out.sd_beta
+
+                    fit = model_function(out.beta, x_data)
+                    fit_up = model_function(popt_up, x_data)
+                    fit_dw = model_function(popt_dw, x_data)
+                    ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
                 ax.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red', label='fit')
                 plt.legend()
                 ax.set_xlabel('x')
@@ -194,20 +197,20 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                 print(f'\nax.plot({varbl[1]},{varbl[0]}({varbl[1]},{params}),lw=0.5,label=\'Fit\')')
 
             if flag is not False:
-                nstd = 2.
-                popt_up = popt + nstd * perr
-                popt_dw = popt - nstd * perr
-
-                fit = model_function(x_data, *popt)
-                fit_up = model_function(x_data, *popt_up)
-                fit_dw = model_function(x_data, *popt_dw)
-
                 fig, ax = plt.subplots()
                 if yerr is not False:
                     ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='data')
                 else:
                     ax.plot(x_data, y_data, ms=1, marker='o', mew=0.5, label='data')
-                ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
+                if fill is False:
+                    nstd = 2.
+                    popt_up = popt + nstd * perr
+                    popt_dw = popt - nstd * perr
+
+                    fit = model_function(x_data, *popt)
+                    fit_up = model_function(x_data, *popt_up)
+                    fit_dw = model_function(x_data, *popt_dw)
+                    ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
                 ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
                 plt.legend()
                 ax.set_xlabel('x')
@@ -221,7 +224,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 # gaussian fit only with scipy.optimize
 # normal gaussian function with/without offset build in
 # calculates initial guesses
-def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False):
+def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False, fill=False):
     def gauss(x,a,x0,sigma):
         return a*np.exp(-(x-x0)**2/(2.*sigma**2))
     def gauss_offs(x,a,x0,sigma,b):
@@ -245,7 +248,7 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
         if offs is not False:
             A = y_data.max()-b
             FWHM = np.absolute(mu - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
-        if yerr == True:
+        if yerr is not False:
             if offs is not False:
                 popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b], sigma = yerr)
             else:
@@ -289,7 +292,7 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
         if offs is not False:
             A = y_data.max()-b
             FWHM = np.absolute(mu - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
-        if yerr == True:
+        if yerr is not False:
             if offs is not False:
                 popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b], sigma = yerr)
             else:
@@ -340,20 +343,20 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
                 print(f'\nax.plot({varbl[0]},{function}({varbl[0]},{params}),lw=0.5,label=\'Fit\')')
 
         if flag is not False:
-            nstd = 5.
-            popt_up = popt + nstd * perr
-            popt_dw = popt - nstd * perr
-
-            fit = model_function(x_data, *popt)
-            fit_up = model_function(x_data, *popt_up)
-            fit_dw = model_function(x_data, *popt_dw)
-
             fig, ax = plt.subplots()
             if yerr is not False:
                 ax.errorbar(x_data, y_data, yerr=yerr, ms=3, mew=0.5, marker="x", lw=0.5, capsize=2, label='data')
             else:
                 ax.plot(x_data, y_data, ms=1, marker='o', mew=0.5, label='data')
-            ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='5$\sigma$')
+            if fill is False:                
+                nstd = 5.
+                popt_up = popt + nstd * perr
+                popt_dw = popt - nstd * perr
+
+                fit = model_function(x_data, *popt)
+                fit_up = model_function(x_data, *popt_up)
+                fit_dw = model_function(x_data, *popt_dw)
+                ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='5$\sigma$')
             ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
             plt.legend()
             ax.set_xlabel('x')
