@@ -10,4 +10,5 @@ Set `flag` to see plot.
 Set `copy` to get matplotlib code for fit to copy.  
 Set `retoure` to return results from kafe2 or scipy.  
 Set `offs` to fit with a gaussian with offset.  
-Set `plot` with `ax` from subplot to plot in a subplot environment.
+Set `plot` with `ax` from subplot to plot in a subplot environment.  
+Set `fill` to disable sigma enviromnment.
