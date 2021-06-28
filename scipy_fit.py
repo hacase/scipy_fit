@@ -81,16 +81,6 @@ import matplotlib.pyplot as plt
 # set retoure to return internal results
 # set plot to ax to plot in subplot environment, set l for label
 # fit program for python with scipy.optimize and scipy.odr
-import numpy as np
-from scipy.optimize import curve_fit
-import scipy.odr as sodr
-import matplotlib.pyplot
-import inspect
-
-import warnings
-warnings.filterwarnings("ignore")
-
-import matplotlib.pyplot as plt
 def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, init=False, fill=False):
     if init is not False:
         if isinstance(init, int):
