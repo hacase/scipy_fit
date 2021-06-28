@@ -72,24 +72,36 @@ def revert_params():
     
 import matplotlib.pyplot as plt
 # fitprogram
-# if xerr, executed with scipy.odr, but with num set to variable number
+# if xerr, executed with scipy.odr, but with init set to variable number
+# or initial values
 # else executed with scipy.optimize, curve_fit
 # returns fit parameter
 # set copy to return plot command
-# set flag to return fit plot
+# set flag to return fit plot, set fill to disable sigma environment
 # set retoure to return internal results
 # set plot to ax to plot in subplot environment, set l for label
-def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, num=False, fill=False):
-    if num is not False:
-        if isinstance(num, int):
-            num = np.ones(num)
+# fit program for python with scipy.optimize and scipy.odr
+import numpy as np
+from scipy.optimize import curve_fit
+import scipy.odr as sodr
+import matplotlib.pyplot
+import inspect
+
+import warnings
+warnings.filterwarnings("ignore")
+
+import matplotlib.pyplot as plt
+def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, init=False, fill=False):
+    if init is not False:
+        if isinstance(init, int):
+            init = np.ones(init)
     if plot is not False:
         if xerr is not False:
             lin_model = sodr.Model(model_function)
             fit_data = sodr.RealData(x_data, y_data, sx=xerr)
             if yerr is not False:
                 fit_data = sodr.RealData(x_data, y_data, sx=xerr, sy=yerr)
-            odr = sodr.ODR(fit_data, lin_model, beta0 = num)
+            odr = sodr.ODR(fit_data, lin_model, beta0 = init)
             out = odr.run()
             if l is False:
                 return plot.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red')
@@ -100,7 +112,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                     popt, pcov = curve_fit(model_function, x_data, y_data, sigma=yerr)
             else:
                     popt, pcov = curve_fit(model_function, x_data, y_data)
-            if l is not False:
+            if l is False:
                 return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
             else:
                 return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label=l)
@@ -111,7 +123,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             fit_data = sodr.RealData(x_data, y_data, sx=xerr)
             if yerr is not False:
                 fit_data = sodr.RealData(x_data, y_data, sx=xerr, sy=yerr)
-            odr = sodr.ODR(fit_data, lin_model, beta0 = num)
+            odr = sodr.ODR(fit_data, lin_model, beta0 = init)
             out = odr.run()
 
             print('#===== Results of Fit =====#')
@@ -120,7 +132,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             print('Fit model:', word_2)
 
             print('=== Parameter Values ===')
-            for i in range(len(num)):
+            for i in range(len(init)):
                 print(f'Par. {i+1}: {out.beta[i]:.2e} +/- {out.sd_beta[i]:.2e}')
                 
             print('=== Goodness of fit ===')
@@ -148,12 +160,22 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                     nstd = 2.
                     popt_up = out.beta + nstd * out.sd_beta
                     popt_dw = out.beta - nstd * out.sd_beta
-
-                    fit = model_function(out.beta, x_data)
-                    fit_up = model_function(popt_up, x_data)
-                    fit_dw = model_function(popt_dw, x_data)
-                    ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
-                ax.plot(x_data, model_function(out.beta, x_data), linewidth=0.5, c='red', label='fit')
+                            
+                    dist = np.abs(x_data[-1]-x_data[0])
+                    step = np.arange(x_data[0], x_data[-1], dist / 1000.)
+                    if not len(step):
+                        step = np.arange(x_data[0], x_data[-1], -dist / 1000.)
+                    
+                    fit_up = model_function(popt_up, step)
+                    fit_dw = model_function(popt_dw, step)
+                    for i in range(len(fit_up)):
+                        if fit_up[i] < fit_dw[i]:
+                            temp = fit_dw[i]
+                            fit_dw[i] = fit_up[i]
+                            fit_up[i] = temp
+                            
+                    ax.fill_between(step, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
+                ax.plot(step, model_function(out.beta, step), linewidth=0.5, c='red', label='fit')
                 plt.legend()
                 ax.set_xlabel('x')
                 ax.set_ylabel('y')
@@ -207,12 +229,22 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                     nstd = 2.
                     popt_up = popt + nstd * perr
                     popt_dw = popt - nstd * perr
-
-                    fit = model_function(x_data, *popt)
-                    fit_up = model_function(x_data, *popt_up)
-                    fit_dw = model_function(x_data, *popt_dw)
-                    ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
-                ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
+                            
+                    dist = np.abs(x_data[-1]-x_data[0])
+                    step = np.arange(x_data[0], x_data[-1], dist / 1000.)
+                    if not len(step):
+                        step = np.arange(x_data[0], x_data[-1], -dist / 1000.)
+                    
+                    fit_up = model_function(step, *popt_up)
+                    fit_dw = model_function(step, *popt_dw)                    
+                    for i in range(len(fit_up)):
+                        if fit_up[i] < fit_dw[i]:
+                            temp = fit_dw[i]
+                            fit_dw[i] = fit_up[i]
+                            fit_up[i] = temp
+                            
+                    ax.fill_between(step, fit_up, fit_dw, alpha=.25, label='2$\sigma$')
+                ax.plot(step, model_function(step, *popt), linewidth=0.5, c='red', label='fit')
                 plt.legend()
                 ax.set_xlabel('x')
                 ax.set_ylabel('y')
@@ -225,7 +257,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 # gaussian fit only with scipy.optimize
 # normal gaussian function with/without offset build in
 # calculates initial guesses
-def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False, fill=False):
+def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False, l=False, fill=False):
     def gauss(x,a,x0,sigma):
         return a*np.exp(-(x-x0)**2/(2.*sigma**2))
     def gauss_offs(x,a,x0,sigma,b):
@@ -260,7 +292,10 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             else:
                 popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM])
                 
-        return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
+        if l is not False:
+            return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red')
+        else:
+            return plot.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label=l)
     
     else:    
         print('#===== Results of Fit =====#')    
