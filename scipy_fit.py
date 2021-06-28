@@ -221,9 +221,9 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                     popt_dw = popt - nstd * perr
                             
                     dist = np.abs(x_data[-1]-x_data[0])
-                    step = np.arange(x_data[0], x_data[-1], dist / 1000.)
+                    step = np.arange(x_data[0], x_data[-1], dist / 10000.)
                     if not len(step):
-                        step = np.arange(x_data[0], x_data[-1], -dist / 1000.)
+                        step = np.arange(x_data[0], x_data[-1], -dist / 10000.)
                     
                     fit_up = model_function(step, *popt_up)
                     fit_dw = model_function(step, *popt_dw)                    
@@ -378,11 +378,21 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
                 nstd = 5.
                 popt_up = popt + nstd * perr
                 popt_dw = popt - nstd * perr
+                
+                dist = np.abs(x_data[-1]-x_data[0])
+                step = np.arange(x_data[0], x_data[-1], dist / 10000.)
+                if not len(step):
+                    step = np.arange(x_data[0], x_data[-1], -dist / 10000.)
 
-                fit = model_function(x_data, *popt)
-                fit_up = model_function(x_data, *popt_up)
-                fit_dw = model_function(x_data, *popt_dw)
-                ax.fill_between(x_data, fit_up, fit_dw, alpha=.25, label='5$\sigma$')
+                fit_up = model_function(step, *popt_up)
+                fit_dw = model_function(step, *popt_dw)                    
+                for i in range(len(fit_up)):
+                    if fit_up[i] < fit_dw[i]:
+                        temp = fit_dw[i]
+                        fit_dw[i] = fit_up[i]
+                        fit_up[i] = temp
+
+                ax.fill_between(step, fit_up, fit_dw, alpha=.25, label='5$\sigma$')
             ax.plot(x_data, model_function(x_data, *popt), linewidth=0.5, c='red', label='fit')
             plt.legend()
             ax.set_xlabel('x')
