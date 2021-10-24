@@ -397,3 +397,198 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             return popt, perr
 
         print('\n')
+
+# returns value and error in scientific notation      
+def sciexpo(val, err, rnd=2, tbl=False, ltx=False, cdot=False):
+    exp=np.zeros(len(val),dtype=int)
+    rst=np.zeros(len(val),dtype=int)
+
+    for i in range(len(val)):
+        for j in np.arange(-100,100,1):
+            if int(val[i]/10.**j) == 0:
+                exp[i]=j-1
+                break
+
+    err=err/10.**(exp)
+
+    for i in range(len(err)):
+        for j in np.arange(-100,100,1):
+            if (int(err[i]/10.**j) == 0):
+                if j>-rnd:
+                    err[i]/10.**j
+                else:
+                    rst[i]=j-1
+                break
+
+
+
+    new_val=np.round(val/10.**exp,rnd)
+
+    new_err=np.round(err/10.**rst,rnd)
+    
+    if cdot is not False:
+        if ltx == 1:
+            for i in range(len(val)):
+                if exp[i]==0:
+                    if rst[i]==0:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}$\\\\',sep='')
+                    else:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '\\cdot\\num{e',f'{rst[i]}',
+                              '}}$\\\\',sep='')
+                else:
+                    if rst[i]==0:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}{e',f'{exp[i]}','}$\\\\',sep='')
+                    else:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '\\cdot\\num{e',f'{rst[i]}',
+                              '}}{e',f'{exp[i]}','}$\\\\',sep='')
+
+        if ltx == 2:
+            for i in range(len(val)):
+                if exp[i]==0:
+                    if rst[i]==0:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}$',sep='')
+                    else:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '\\cdot\\num{e',f'{rst[i]}',
+                              '}}$',sep='')
+                else:
+                    if rst[i]==0:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}{e',f'{exp[i]}','}$',sep='')
+                    else:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '\\cdot\\num{e',f'{rst[i]}',
+                              '}}{e',f'{exp[i]}','}$',sep='')
+    else:
+        if ltx == 1:
+            for i in range(len(val)):
+                if exp[i]==0:
+                    if rst[i]==0:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}$\\\\',sep='')
+                    else:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{\\num{',f'{new_err[i]:.{rnd}f}',
+                              'e',f'{rst[i]}',
+                              '}}$\\\\',sep='')
+                else:
+                    if rst[i]==0:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}{e',f'{exp[i]}','}$\\\\',sep='')
+                    else:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{\\num{',f'{new_err[i]:.{rnd}f}',
+                              'e',f'{rst[i]}',
+                              '}}{e',f'{exp[i]}','}$\\\\',sep='')
+
+        if ltx == 2:
+            for i in range(len(val)):
+                if exp[i]==0:
+                    if rst[i]==0:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}$',sep='')
+                    else:
+                        print('$\\sciexpo{',f'{new_val[i]:.{rnd}f}',
+                              '}{\\num{',f'{new_err[i]:.{rnd}f}',
+                              'e',f'{rst[i]}',
+                              '}}$',sep='')
+                else:
+                    if rst[i]==0:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{',f'{new_err[i]:.{rnd}f}',
+                              '}{e',f'{exp[i]}','}$',sep='')
+                    else:
+                        print('$\\sciexp{',f'{new_val[i]:.{rnd}f}',
+                              '}{\\num{',f'{new_err[i]:.{rnd}f}',
+                              'e',f'{rst[i]}',
+                              '}}{e',f'{exp[i]}','}$',sep='')
+    
+    if tbl is not False:
+        if cdot is not False:
+            print('for i in range(len(val)):')
+            print('    if exp[i]==0:')
+            print('        if rst[i]==0:')
+            print("            text.append(' $\\\\sciexpo{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print("            text.append(' }{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' }$\\\\\n')")
+            print('        else:')
+            print("            text.append(' $\\\\sciexpo{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' }{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' \\cdot\\num{e')")
+            print("            text.append(f' ","{rst[i]}","$')",sep='')
+            print(r"            text.append('\\\\\n')")
+            print('    else:')
+            print('        if rst[i]==0:')
+            print("            text.append(' $\\\\sciexp{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print("            text.append(' }{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}')",sep='')
+            print("            text.append(' }{e')")
+            print("            text.append(f' {exp[i]}')")
+            print(r"            text.append(' }$\\\\\n')")
+            print('        else:')
+            print("            text.append(' $\\\\sciexp{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' }{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' \\cdot\\num{e')")
+            print("            text.append(f' ","{rst[i]}","')",sep='')
+            print("            text.append(' }}{e')")
+            print("            text.append(f' {exp[i]}')")
+            print(r"            text.append(' }$\\\\\n')")
+        else:
+            print('for i in range(len(val)):')
+            print('    if exp[i]==0:')
+            print('        if rst[i]==0:')
+            print("            text.append(' $\\\\sciexpo{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print("            text.append(' }{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' }$\\\\\n')")
+            print('        else:')
+            print("            text.append(' $\\\\sciexpo{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' }{\\num{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}e')",sep='')
+            print("            text.append(f' ","{rst[i]}","$')",sep='')
+            print(r"            text.append('\\\\\n')")
+            print('    else:')
+            print('        if rst[i]==0:')
+            print("            text.append(' $\\\\sciexp{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print("            text.append(' }{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}')",sep='')
+            print("            text.append(' }{e')")
+            print("            text.append(f' {exp[i]}')")
+            print(r"            text.append(' }$\\\\\n')")
+            print('        else:')
+            print("            text.append(' $\\\\sciexp{')")
+            print("            text.append(f' {new_val[i]:.",f'{rnd}',"f}')",sep='')
+            print(r"            text.append(' }{\\num{')")
+            print("            text.append(f' {new_err[i]:.",f'{rnd}',"f}e')",sep='')
+            print("            text.append(f' ","{rst[i]}","')",sep='')
+            print("            text.append(' }}{e')")
+            print("            text.append(f' {exp[i]}')")
+            print(r"            text.append(' }$\\\\\n')")
+        
+    return new_val, new_err, exp, rst
