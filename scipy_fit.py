@@ -263,22 +263,22 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             else:
                 model_function=gauss_offs
         A = y_data.max()
-        mu = x_data[y_data.argmax()]
+        x0 = x_data[y_data.argmax()]
         b = (y_data[0] + y_data[-1]) / 2
-        FWHM = np.absolute(mu - np.where(y_data > (y_data.max() * 0.5))[0][0])
+        FWHM = np.absolute(x0 - np.where(y_data > (y_data.max() * 0.5))[0][0])
         if offs is not False:
             A = y_data.max()-b
-            FWHM = np.absolute(mu - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
+            FWHM = np.absolute(x0 - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
         if yerr is not False:
             if offs is not False:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b], sigma = yerr)
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM, b], sigma = yerr)
             else:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM], sigma = yerr)
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM], sigma = yerr)
         else:
             if offs is not False:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b])
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM, b])
             else:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM])
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM])
                 
         if l is not False:
             return plot.plot(step, model_function(step, *popt), linewidth=0.5, c='red')
@@ -310,22 +310,22 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             print('Fit model:', function)
 
         A = y_data.max()
-        mu = x_data[y_data.argmax()]
+        x0 = x_data[y_data.argmax()]
         b = (y_data[0] + y_data[-1]) / 2
-        FWHM = np.absolute(mu - np.where(y_data > (y_data.max() * 0.5))[0][0])
+        FWHM = np.absolute(x0 - np.where(y_data > (y_data.max() * 0.5))[0][0])
         if offs is not False:
             A = y_data.max()-b
-            FWHM = np.absolute(mu - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
+            FWHM = np.absolute(x0 - x_data[np.where(y_data > ((y_data.max() - b) * 0.5 + b))[0][0]])
         if yerr is not False:
             if offs is not False:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b], sigma = yerr)
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM, b], sigma = yerr)
             else:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM], sigma = yerr)
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM], sigma = yerr)
         else:
             if offs is not False:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM, b])
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM, b])
             else:
-                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, mu, FWHM])
+                popt, pcov = curve_fit(model_function, x_data, y_data, p0=[A, x0, FWHM])
 
         perr=np.sqrt(np.diag(pcov))
 
@@ -333,11 +333,11 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
         if local is True:
             if offs is False:
                 print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
-                print(f'mu:    {popt[1]:.2e} +/- {perr[1]:.2e}')
+                print(f'x0:    {popt[1]:.2e} +/- {perr[1]:.2e}')
                 print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
             else:
                 print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
-                print(f'mu:    {popt[1]:.2e} +/- {perr[1]:.2e}')
+                print(f'x0:    {popt[1]:.2e} +/- {perr[1]:.2e}')
                 print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
                 print(f'b:     {popt[3]:.2e} +/- {perr[3]:.2e}')
         else:
