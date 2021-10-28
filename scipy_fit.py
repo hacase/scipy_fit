@@ -246,10 +246,10 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
     step = np.arange(x_data[0], x_data[-1], dist / 1000.)
     if not len(step):
         step = np.arange(x_data[0], x_data[-1], -dist / 1000.)
-    def gauss(x,a,x0,sigma):
-        return a*np.exp(-(x-x0)**2/(2.*sigma**2))
-    def gauss_offs(x,a,x0,sigma,b):
-        return a*np.exp(-(x-x0)**2/(2.*sigma**2))+b
+    def gauss(x,A,x0,sigma):
+        return A*np.exp(-(x-x0)**2/(2.*sigma**2))
+    def gauss_offs(x,A,x0,sigma,b):
+        return A*np.exp(-(x-x0)**2/(2.*sigma**2))+b
     
     frame = inspect.currentframe()
     frame = inspect.getouterframes(frame)[1]
@@ -295,15 +295,15 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
                 string = str(model_function)
                 word_2 = string.split()[1]
                 print('Fit model:', word_2)
-                print('def gauss(x,a,x0,sigma):')
-                print('    return a*np.exp(-(x-x0)**2/(2.*sigma**2))')
+                print('def gauss(x,A,x0,sigma):')
+                print('    return A*np.exp(-(x-x0)**2/(2.*sigma**2))')
             else:
                 model_function=gauss_offs
                 string = str(model_function)
                 word_2 = string.split()[1]
                 print('Fit model:', word_2)
-                print('def gauss_offs(x,a,x0,sigma,b):')
-                print('    return a*np.exp(-(x-x0)**2/(2.*sigma**2))+b')
+                print('def gauss_offs(x,A,x0,sigma,b):')
+                print('    return A*np.exp(-(x-x0)**2/(2.*sigma**2))+b')
         else:
             string = varbl[2]
             function = string.replace('model_function=', '')
