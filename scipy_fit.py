@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 # store original plot parameters so that we can revert:
 ORIG_MATPLOTLIB_CONF = dict(matplotlib.rcParams)
 
-def saveplot(fig_width=None, fig_height=None, columns=1, fontsize=8):
+def saveplot(fig_width=None, fig_height=None, columns=1, fontsize=10):
     """Set up matplotlib's RC params for LaTeX plotting.
     Call this function before plotting a figure.
 
@@ -20,7 +20,7 @@ def saveplot(fig_width=None, fig_height=None, columns=1, fontsize=8):
     fig_width : float, optional, inches
     fig_height : float,  optional, inches
     columns : {1, 2}; 1 is default
-    fontsize : 8 pt default
+    fontsize : 10 pt default
     """
 
     assert(columns in [1,2])
@@ -60,6 +60,7 @@ def saveplot(fig_width=None, fig_height=None, columns=1, fontsize=8):
     }
 
     matplotlib.rcParams.update(params)
+    
 
 def revert_params():
     """
