@@ -82,7 +82,7 @@ import matplotlib.pyplot as plt
 # set retoure to return internal results
 # set plot to ax to plot in subplot environment, set l for label
 # fit program for python with scipy.optimize and scipy.odr
-def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, init=False, fill=False):
+def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, flag=False, retoure=False, plot=False, l=False, init=False, fill=False, sur=False):
     dist = np.abs(x_data[-1]-x_data[0])
     step = np.arange(x_data[0], x_data[-1], dist / 1000.)
     if not len(step):
@@ -121,17 +121,18 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             odr = sodr.ODR(fit_data, lin_model, beta0 = init)
             out = odr.run()
 
-            print('#===== Results of Fit =====#')
-            string = str(model_function)
-            word_2 = string.split()[1]
-            print('Fit model:', word_2)
+            if sur is not False:
+                print('#===== Results of Fit =====#')
+                string = str(model_function)
+                word_2 = string.split()[1]
+                print('Fit model:', word_2)
 
-            print('=== Parameter Values ===')
-            for i in range(len(init)):
-                print(f'Par. {i+1}: {out.beta[i]:.2e} +/- {out.sd_beta[i]:.2e}')
-                
-            print('=== Goodness of fit ===')
-            print('Chi^2:', out.res_var)
+                print('=== Parameter Values ===')
+                for i in range(len(init)):
+                    print(f'Par. {i+1}: {out.beta[i]:.2e} +/- {out.sd_beta[i]:.2e}')
+
+                print('=== Goodness of fit ===')
+                print('Chi^2:', out.res_var)
                 
             if copy is not False:
                 frame = inspect.currentframe()
@@ -180,21 +181,22 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 
             perr=np.sqrt(np.diag(pcov))
 
-            print('#===== Results of Fit =====#')
-            string = str(model_function)
-            word_2 = string.split()[1]
-            print('Fit model:', word_2)
+            if sur is not False:
+                print('#===== Results of Fit =====#')
+                string = str(model_function)
+                word_2 = string.split()[1]
+                print('Fit model:', word_2)
 
-            print('=== Parameter Values ===')
-            for i in range(len(popt)):
-                print(f'Par. {i+1}: {popt[i]:.2e} +/- {perr[i]:.2e}')
+                print('=== Parameter Values ===')
+                for i in range(len(popt)):
+                    print(f'Par. {i+1}: {popt[i]:.2e} +/- {perr[i]:.2e}')
 
-            print('=== Goodness of fit ===')
-            residuals = y_data- model_function(x_data, *popt)
-            ss_res = np.sum(residuals**2)
-            ss_tot = np.sum((y_data-np.mean(y_data))**2)
-            r_squared = 1 - (ss_res / ss_tot)
-            print('R^2:', r_squared)
+                print('=== Goodness of fit ===')
+                residuals = y_data- model_function(x_data, *popt)
+                ss_res = np.sum(residuals**2)
+                ss_tot = np.sum((y_data-np.mean(y_data))**2)
+                r_squared = 1 - (ss_res / ss_tot)
+                print('R^2:', r_squared)
 
             if copy is not False:
                 frame = inspect.currentframe()
@@ -242,7 +244,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 # gaussian fit only with scipy.optimize
 # normal gaussian function with/without offset build in
 # calculates initial guesses
-def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False, l=False, fill=False):
+def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, copy=False, flag=False, retoure=False, plot=False, l=False, fill=False, sur=False):
     dist = np.abs(x_data[-1]-x_data[0])
     step = np.arange(x_data[0], x_data[-1], dist / 1000.)
     if not len(step):
@@ -287,28 +289,29 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             return plot.plot(step, model_function(step, *popt), linewidth=0.5, c='red', label=l)
     
     else:    
-        print('#===== Results of Fit =====#')    
-        local = False
-        if model_function is False:
-            local = True
-            if offs is False:
-                model_function=gauss
-                string = str(model_function)
-                word_2 = string.split()[1]
-                print('Fit model:', word_2)
-                print('def gauss(x,A,x0,sigma):')
-                print('    return A*np.exp(-(x-x0)**2/(2.*sigma**2))')
+        if sur is not False:
+            print('#===== Results of Fit =====#')    
+            local = False
+            if model_function is False:
+                local = True
+                if offs is False:
+                    model_function=gauss
+                    string = str(model_function)
+                    word_2 = string.split()[1]
+                    print('Fit model:', word_2)
+                    print('def gauss(x,A,x0,sigma):')
+                    print('    return A*np.exp(-(x-x0)**2/(2.*sigma**2))')
+                else:
+                    model_function=gauss_offs
+                    string = str(model_function)
+                    word_2 = string.split()[1]
+                    print('Fit model:', word_2)
+                    print('def gauss_offs(x,A,x0,sigma,b):')
+                    print('    return A*np.exp(-(x-x0)**2/(2.*sigma**2))+b')
             else:
-                model_function=gauss_offs
-                string = str(model_function)
-                word_2 = string.split()[1]
-                print('Fit model:', word_2)
-                print('def gauss_offs(x,A,x0,sigma,b):')
-                print('    return A*np.exp(-(x-x0)**2/(2.*sigma**2))+b')
-        else:
-            string = varbl[2]
-            function = string.replace('model_function=', '')
-            print('Fit model:', function)
+                string = varbl[2]
+                function = string.replace('model_function=', '')
+                print('Fit model:', function)
 
         A = y_data.max()
         x0 = x_data[y_data.argmax()]
@@ -330,28 +333,29 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
 
         perr=np.sqrt(np.diag(pcov))
 
-        print('=== Parameter Values ===')
-        if local is True:
-            if offs is False:
-                print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
-                print(f'x0:    {popt[1]:.2e} +/- {perr[1]:.2e}')
-                print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
+        if sur is not False:
+            print('=== Parameter Values ===')
+            if local is True:
+                if offs is False:
+                    print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
+                    print(f'x0:    {popt[1]:.2e} +/- {perr[1]:.2e}')
+                    print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
+                else:
+                    print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
+                    print(f'x0:    {popt[1]:.2e} +/- {perr[1]:.2e}')
+                    print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
+                    print(f'b:     {popt[3]:.2e} +/- {perr[3]:.2e}')
             else:
-                print(f'A:     {popt[0]:.2e} +/- {perr[0]:.2e}')
-                print(f'x0:    {popt[1]:.2e} +/- {perr[1]:.2e}')
-                print(f'sigma: {popt[2]:.2e} +/- {perr[2]:.2e}')
-                print(f'b:     {popt[3]:.2e} +/- {perr[3]:.2e}')
-        else:
-            for i in range(len(popt)):
-                print(f'Par. {i+1}: {popt[i]:.2e} +/- {perr[i]:.2e}')
+                for i in range(len(popt)):
+                    print(f'Par. {i+1}: {popt[i]:.2e} +/- {perr[i]:.2e}')
 
-        residuals = y_data- model_function(x_data, *popt)
-        ss_res = np.sum(residuals**2)
-        ss_tot = np.sum((y_data-np.mean(y_data))**2)
-        r_squared = 1 - (ss_res / ss_tot)
+            residuals = y_data- model_function(x_data, *popt)
+            ss_res = np.sum(residuals**2)
+            ss_tot = np.sum((y_data-np.mean(y_data))**2)
+            r_squared = 1 - (ss_res / ss_tot)
 
-        print('=== Goodness of fit ===')
-        print('R^2:', r_squared)
+            print('=== Goodness of fit ===')
+            print('R^2:', r_squared)
 
         if copy is not False:
             arry=[]
