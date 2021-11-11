@@ -121,7 +121,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
             odr = sodr.ODR(fit_data, lin_model, beta0 = init)
             out = odr.run()
 
-            if sur is not False:
+            if sur is False:
                 print('#===== Results of Fit =====#')
                 string = str(model_function)
                 word_2 = string.split()[1]
@@ -181,7 +181,7 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
 
             perr=np.sqrt(np.diag(pcov))
 
-            if sur is not False:
+            if sur is False:
                 print('#===== Results of Fit =====#')
                 string = str(model_function)
                 word_2 = string.split()[1]
@@ -289,7 +289,7 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             return plot.plot(step, model_function(step, *popt), linewidth=0.5, c='red', label=l)
     
     else:    
-        if sur is not False:
+        if sur is False:
             print('#===== Results of Fit =====#')    
             local = False
             if model_function is False:
@@ -333,7 +333,7 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
 
         perr=np.sqrt(np.diag(pcov))
 
-        if sur is not False:
+        if sur is False:
             print('=== Parameter Values ===')
             if local is True:
                 if offs is False:
