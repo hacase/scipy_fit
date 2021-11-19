@@ -55,8 +55,7 @@ def saveplot(fig_width=None, fig_height=None, columns=1, fontsize=10):
               'figure.figsize' : [fig_width, fig_height],
               'font.family' : 'serif',
               'savefig.bbox' : 'tight',
-              'savefig.dpi' : 300  # set to 600 for poster printing or PR
-                                  # figures
+              'savefig.dpi' : 300  # set to 600 for poster printing or PR figures
     }
 
     matplotlib.rcParams.update(params)
