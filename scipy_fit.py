@@ -237,7 +237,14 @@ def exefit(model_function, x_data, y_data, xerr=False, yerr=False, copy=False, f
                 ax.set_ylabel('y')
 
             if retoure is not False:
-                return popt, perr
+                if xerr is not False:
+                    return popt, perr, out.res_var
+                else:
+                    residuals = y_data- model_function(x_data, *popt)
+                    ss_res = np.sum(residuals**2)
+                    ss_tot = np.sum((y_data-np.mean(y_data))**2)
+                    r_squared = 1 - (ss_res / ss_tot)
+                    return popt, perr, r_squared
             
             print('\n')
         
@@ -399,7 +406,14 @@ def exefit_gauss(x_data, y_data, model_function=False, yerr=False, offs=False, c
             revert_params()
 
         if retoure is not False:
-            return popt, perr
+                if xerr is not False:
+                    return popt, perr, out.res_var
+                else:
+                    residuals = y_data- model_function(x_data, *popt)
+                    ss_res = np.sum(residuals**2)
+                    ss_tot = np.sum((y_data-np.mean(y_data))**2)
+                    r_squared = 1 - (ss_res / ss_tot)
+                    return popt, perr, r_squared
 
         print('\n')
 
